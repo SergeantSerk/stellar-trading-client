@@ -1,80 +1,94 @@
 import type { NextPage } from 'next'
-import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import { Keypair } from 'stellar-sdk'
-import { FormEvent, useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
-import { getSessionFromCookie, setSessionCookie } from '../session/cookie'
-import { SessionInterface } from '../session/session.interface'
+import { useEffect, useState } from 'react'
+import WalletConnectClient, { CLIENT_EVENTS } from "@walletconnect/client"
+import { PairingTypes } from '@walletconnect/types'
+import QRCode from 'qrcode'
+import { Header, Footer } from './common'
 
 const Home: NextPage = () => {
-  const router = useRouter()
+  const [wcClientQrCodeUri, setWcClientQrCodeUri] = useState<string>('')
+  const [wcClient, setWcClient] = useState<WalletConnectClient>()
 
   useEffect(() => {
-    const session = getSessionFromCookie()
-    if (session) {
-      router.push('/app')
-    }
-  }, [router])
-
-  const [key, setKey] = useState('')
-
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault()
-
-    let keypair: Keypair | undefined = undefined
-    try {
-      keypair = Keypair.fromSecret(key)
-    } catch (e) {
-      try {
-        keypair = Keypair.fromPublicKey(key)
-      } catch (e) {
-        console.log(e)
-      }
-    }
-
-    if (keypair) {
-      const session: SessionInterface = { keypair: keypair }
-      setSessionCookie(session)
-
-      router.push('/app')
+    if (!wcClient) {
+      WalletConnectClient.init({
+        projectId: "589e95a254af8b2877fc64b308bddaa5",
+        relayUrl: "wss://relay.walletconnect.com",
+        metadata: {
+          name: "Stellar Trading Client",
+          description: "An app to trade cryptocurrency real-time on the Stellar network.",
+          url: "#",
+          icons: ["https://raw.githubusercontent.com/WalletConnect/walletconnect-assets/master/png/square/walletconnect-square-white.png"]
+        },
+      }).then((wcClient) => {
+        setWcClient(wcClient)
+      }).catch((e) => {
+        console.log('wc init failed:', e)
+      })
     } else {
-      console.log('Invalid key (cannot derive as secret nor public key)')
+      console.log('wc client:', wcClient)
+
+      wcClient.on(CLIENT_EVENTS.pairing.proposal,
+        async (proposal: PairingTypes.Proposal) => {
+          const { uri } = proposal.signal.params
+          console.log('pairing proposal:', proposal)
+
+          const qrCodeUri = await QRCode.toDataURL(uri)
+          setWcClientQrCodeUri(qrCodeUri)
+        })
+
+      console.log('wc connect')
+      // wcClient.connect({
+      //   permissions: {
+      //     blockchain: {
+      //       chains: ["stellar:pubnet"],
+      //     },
+      //     jsonrpc: {
+      //       methods: ["stellar_signXDR"],
+      //     }
+      //   }
+      // }).then((settled) => {
+      //   console.log('wc connected settled', settled)
+      // }).catch((e) => {
+      //   // TO-DO: DO NOT IGNORE
+      // })
     }
-  }
+  }, [wcClient])
 
   return (
     <div className={styles.container}>
-      <Head>
-        <title>Stellar Trading Client</title>
-        <meta name="description" content="An app to trade cryptocurrency real-time on the Stellar network." />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <Header />
 
       <main className={styles.main}>
-        <form onSubmit={handleSubmit}>
-          <label>Key:
-            <input type='text' value={key} onChange={(e) => setKey(e.target.value)} />
-          </label>
-          <input type='submit' />
-        </form>
+        <WalletConnectQrCodeComponent wcClientUri={wcClientQrCodeUri}></WalletConnectQrCodeComponent>
       </main>
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
+      <Footer />
     </div>
   )
+}
+
+const WalletConnectQrCodeComponent = ({ wcClientUri }: { wcClientUri: string }) => {
+  if (wcClientUri === '') {
+    return (
+      <div>
+        <p>WalletConnect loading...</p>
+      </div>
+    )
+  } else {
+    return (
+      <div>
+        <Image
+          src={wcClientUri}
+          width={300}
+          height={300}
+          alt='A quick response (QR) code to connect your WalletConnect-compatible wallet to this app.'>
+        </Image>
+      </div>
+    )
+  }
 }
 
 export default Home
