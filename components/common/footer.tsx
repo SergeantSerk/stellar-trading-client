@@ -1,16 +1,5 @@
-import Head from 'next/head'
 import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-
-const Header = () => {
-    return (
-        <Head>
-            <title>Stellar Trading Client</title>
-            <meta name="description" content="An app to trade cryptocurrency real-time on the Stellar network." />
-            <link rel="icon" href="/favicon.ico" />
-        </Head>
-    )
-}
+import styles from '../../styles/Home.module.css'
 
 const Footer = () => {
     return (
@@ -29,4 +18,4 @@ const Footer = () => {
     )
 }
 
-export { Header, Footer }
+export default Footer
