@@ -53,15 +53,11 @@ const Home: NextPage = () => {
       // });
 
       Object.entries(SIGN_CLIENT_EVENTS).forEach(([key, value]) => {
-        for (let key in SIGN_CLIENT_EVENTS) {
-          let value = SIGN_CLIENT_EVENTS[key]
-
           wcSignClient.on(value, (args) => {
             console.log('wc sign client', value, ':', args)
           })
 
           console.log('registered wc sign client event:', value)
-        }
       })
 
 
