@@ -10,15 +10,14 @@
   },
   "dependencies": {
     "@types/qrcode": "^1.4.2",
-    "@walletconnect/client": "^2.0.0-beta.26",
     "@walletconnect/qrcode-modal": "^2.0.0-alpha.20",
     "@walletconnect/sign-client": "^2.0.0-beta.100",
     "@walletconnect/types": "^2.0.0-beta.100",
     "js-cookie": "^3.0.1",
     "next": "12.1.0",
-    "qrcode": "^1.5.0",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "stellar-sdk": "^10.1.2"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.1",
