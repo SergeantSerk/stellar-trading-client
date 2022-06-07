@@ -18,7 +18,6 @@ const Home: NextPage = () => {
     if (!wcSignClient) {
       SignClient.init({
         projectId: "c32cda7d88a4b9baf51b9c51708931fe",
-        relayUrl: 'wss://relay.walletconnect.com',
         metadata: {
           name: "Stellar Trading Client",
           description: "An app to trade cryptocurrency real-time on the Stellar network.",
