@@ -8,29 +8,24 @@ import QRCodeModal from '@walletconnect/qrcode-modal'
 
 const STELLAR_NETWORK_MAINNET = 'stellar:pubnet'
 const STELLAR_NETWORK_TESTNET = 'stellar:testnet'
+
 const STELLAR_METHOD_SIGNONLY = 'stellar_signXDR'
 const STELLAR_METHOD_SIGNSUBMIT = 'stellar_signAndSubmitXDR'
 
 const Home: NextPage = () => {
+  console.log('home page load')
   const [wcSignClient, setWcSignClient] = useState<SignClient>()
 
-  useEffect(() => {
-    if (!wcSignClient) {
-      SignClient.init({
-        projectId: "c32cda7d88a4b9baf51b9c51708931fe",
-        metadata: {
-          name: "Stellar Trading Client",
-          description: "An app to trade cryptocurrency real-time on the Stellar network.",
-          url: "#",
-          icons: ["https://raw.githubusercontent.com/WalletConnect/walletconnect-assets/master/png/square/walletconnect-square-white.png"]
-        }
-      }).then((wcSignClient) => {
-        setWcSignClient(wcSignClient)
-      }).catch((e) => {
-        console.log('wc init failed:', e)
-      })
-    } else {
-      console.log('wc sign client:', wcSignClient)
+  SignClient.init({
+    projectId: "c32cda7d88a4b9baf51b9c51708931fe",
+    metadata: {
+      name: "Stellar Trading Client",
+      description: "An app to trade cryptocurrency real-time on the Stellar network.",
+      url: "#",
+      icons: ["https://raw.githubusercontent.com/WalletConnect/walletconnect-assets/master/png/square/walletconnect-square-white.png"]
+    }
+  }).then((wcSignClient) => {
+    console.log('wc sign client:', wcSignClient)
 
       // wcSignClient.on("session_event", (args) => {
       //   // Handle session events, such as "chainChanged", "accountsChanged", etc.
@@ -51,16 +46,14 @@ const Home: NextPage = () => {
       //   console.log('wc sign client session delete:', args)
       // });
 
-      Object.entries(SIGN_CLIENT_EVENTS).forEach(([key, value]) => {
+      Object.entries(SIGN_CLIENT_EVENTS).forEach(([, value]) => {
           wcSignClient.on(value, (args) => {
             console.log('wc sign client', value, ':', args)
           })
 
           console.log('registered wc sign client event:', value)
       })
-
-
-
+      
       try {
         wcSignClient.connect({
           requiredNamespaces: {
@@ -101,10 +94,11 @@ const Home: NextPage = () => {
       } catch (e) {
         console.log('wc sign client connect error:', e)
       } finally {
-
+        QRCodeModal.close()
       }
-    }
-  }, [wcSignClient])
+  }).catch((e) => {
+    console.log('wc init failed:', e)
+  })
 
   return (
     <div className={styles.container}>
